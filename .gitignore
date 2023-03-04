@@ -1,0 +1,11 @@
+.env
+env
+
+viv/
+venv/
+
+
+.env
+viv/
+sendgrid.env
+*.env
