@@ -1,51 +1,36 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
-class User(models.Model):
-    id=models.AutoField
-    username=models.CharField(max_length=100)
-    email=models.EmailField()
-    password=models.CharField(max_length=200)
-         
-    def __str__(self):
-        return self.username
-        
-
-
+class Employer(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    company_name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=20)
+    num_employees = models.IntegerField()
+    email_verified = models.BooleanField(default=False)
 
 class Employee(models.Model):
-    user=models.ForeignKey(User, on_delete=models.CASCADE) 
-    name=models.CharField(max_length=255)
-    date_of_birth=models.DateTimeField()
-    phone_number=models.CharField(max_length=255)
-    id_number=models.CharField(max_length=255) 
-    kra_pin=models.CharField(max_length=255)
-    position=models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.name
-
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    date_of_birth = models.DateField()
+    phone_number = models.CharField(max_length=20)
+    id_number = models.CharField(max_length=20)
+    kra_pin = models.CharField(max_length=20)
+    position = models.CharField(max_length=100)
+    assets = models.ManyToManyField('Asset', through='AssetAssignment')
 
 class Asset(models.Model):
     name = models.CharField(max_length=100)
-    employee = models.ForeignKey(Employee, null=True, blank=True, on_delete=models.SET_NULL)
+    description = models.CharField(max_length=255)
 
-
-
-
-class LeaveDay (models.Model):
-    STATUS = (('approved','APPROVED'),('unapproved','UNAPPROVED'),('decline','DECLINED'))
-    employee = models.OneToOneField(Employee, on_delete=models.CASCADE)
-    start = models.CharField(blank=False, max_length=15)
-    end = models.CharField(blank=False, max_length=15)
-    status = models.CharField(choices=STATUS,  default='Not Approved',max_length=15)
-    reason = models.TextField()
-
-    def __str__(self):
-        return f'{self.employee} ({self.start_date} - {self.end_date})'
-
-  
+class AssetAssignment(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
+    date_assigned = models.DateField(auto_now_add=True)
+    date_returned = models.DateField(null=True, blank=True)
     
-class Company(models.Model):
-    name = models.CharField(max_length=255)
-    employee = models.ForeignKey(Employee,on_delete=models.CASCADE)    
+class Leave(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    reason = models.CharField(max_length=255)
+    approved = models.BooleanField(default=False)
